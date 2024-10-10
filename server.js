@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv")
 
 const router = require("./routes/index");
 
 const app = express();
 
 const PORT = 3000
+
+dotenv.config()
 
 app.use(
   cors({
