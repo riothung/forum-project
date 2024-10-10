@@ -3,15 +3,15 @@
 const getUserById = async (req, res) => {
   try {
     const id = req.params.id
-    return res.json({
+    return res.status(200).json({
       data: "user" + id,
       success: true
-    }).status(200)
+    })
   } catch (error) {
-    return res.json({
+    return res.status(500).json({
       message: "cannot get user data",
       success: false
-    }).status(500)
+    })
   }
 }
 
