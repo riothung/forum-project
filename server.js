@@ -1,9 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv")
 
 const router = require("./routes/index");
 
 const app = express();
+
+const PORT = 3000
+
+dotenv.config()
 
 app.use(
   cors({
@@ -25,8 +30,8 @@ app.use(
   })
 );
 
-app.use(router);
+app.use("/api", router);
 
-app.listen(3000, () => {
-  console.log("server is ready");
+app.listen(PORT, () => {
+  console.log("Server listening in port " + PORT);
 });
