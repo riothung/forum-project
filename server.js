@@ -5,6 +5,8 @@ const router = require("./routes/index");
 
 const app = express();
 
+const PORT = 3000
+
 app.use(
   cors({
     credentials: true,
@@ -25,8 +27,8 @@ app.use(
   })
 );
 
-app.use(router);
+app.use("/api", router);
 
-app.listen(3000, () => {
-  console.log("server is ready");
+app.listen(PORT, () => {
+  console.log("Server listening in port " + PORT);
 });
