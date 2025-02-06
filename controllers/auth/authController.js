@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const prisma = require("../../db");
-const { Oauth } = require("google-auth-library");
+const { OAuth2Client } = require("google-auth-library");
+const { google } = require("googleapis")
+
+
 
 const register = async (req, res) => {
   const { username, email, password } = req.body;
@@ -48,11 +51,19 @@ const login = async (req, res) => {
   }
 };
 
+
+
 const loginWithGoogle = async (req, res) => {
   const { token } = req.body;
 
+  const oauth2Client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  callback_url: "http://localhost:3000/auth/google/callback"
+  )
+
   try {
-    const ticket = await googleClient.verifyIdToken({
+    const ticket = await oauth2Client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
@@ -61,20 +72,28 @@ const loginWithGoogle = async (req, res) => {
 
     const { sub: googleId, username, email } = payload;
 
-    let user = await prisma.$queryRaw`SELECT id, email, googleId FROM User WHERE googleId = ${googleId} LIMIT 1`;
+    let user = await prisma.user.findUnique({
+      where: { googleId: googleId }
+    });
     
-    if(user){
-      
-    const sendToken = jwt.sign({ googleId: googleId }, process.env.TOKEN_SECRET, { expiresIn: "1 day" });
+    if(!user){
+    
+    user = await prisma.user.create({
+        data: {
+          googleId,
+          username,
+          email
+        }
+      })
 
-    res.cookie("token", sendToken, { httpOnly: true, sameSite: "None", secure: true }).status(200).json({ message: "Login with Google success!" });
-
-    }else{
-      return "You dont have a google account!"
     }
 
+    const sendToken = jwt.sign({ googleId: googleId }, process.env.TOKEN_SECRET, { expiresIn: "1 day" });
+    res.cookie("token", sendToken, { httpOnly: true, sameSite: "None", secure: true }).status(200).json({ message: "Login with Google success!" });
+
+
   } catch (err) {
-    console.error("Google login error:", error);
+    console.error("Google login error:", err);
     return res.status(401).json({ message: "Invalid Google Token" });
   }
 };
